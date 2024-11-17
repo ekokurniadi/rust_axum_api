@@ -3,8 +3,10 @@ use axum::{
     routing::{get, IntoMakeService, Router},
     Json,
 };
+use category_routes::category_routes;
 use product_routes::product_routes;
 use sqlx::PgPool;
+mod category_routes;
 mod product_routes;
 
 pub fn create_routes(db: &PgPool, rabbitmq: &RabbitMQ) -> IntoMakeService<Router> {
@@ -18,7 +20,9 @@ pub fn create_routes(db: &PgPool, rabbitmq: &RabbitMQ) -> IntoMakeService<Router
 }
 
 fn api_v1_routes() -> Router<AppState> {
-    Router::new().nest("/products", product_routes())
+    Router::new()
+        .nest("/category", category_routes())
+        .nest("/products", product_routes())
 }
 
 fn health_check_routes() -> Router {

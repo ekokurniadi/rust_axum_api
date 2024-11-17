@@ -44,7 +44,7 @@ pub struct ProductService {
 }
 
 impl IProductService for ProductService {
-    fn new(product_repository: Arc<ProductRepository>) -> ProductService {
+    fn new(product_repository: Arc<ProductRepository>) -> Self {
         Self { product_repository }
     }
 
