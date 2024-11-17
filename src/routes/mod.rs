@@ -12,9 +12,13 @@ mod category_routes;
 mod product_routes;
 use http::{header::HeaderValue, method::Method};
 
-pub fn create_routes(db: &PgPool, rabbitmq: &RabbitMQ, host: String) -> IntoMakeService<Router> {
+pub fn create_routes(
+    db: &PgPool,
+    rabbitmq: &RabbitMQ,
+    origin_url: &str,
+) -> IntoMakeService<Router> {
     let state = AppState::new(db.clone(), rabbitmq);
-    let api_routes = { Router::new().merge(api_v1_routes(host).with_state(state)) };
+    let api_routes = { Router::new().merge(api_v1_routes(origin_url).with_state(state)) };
 
     Router::new()
         .merge(health_check_routes())
@@ -22,9 +26,9 @@ pub fn create_routes(db: &PgPool, rabbitmq: &RabbitMQ, host: String) -> IntoMake
         .into_make_service()
 }
 
-fn api_v1_routes(host: String) -> Router<AppState> {
+fn api_v1_routes(origin_url: &str) -> Router<AppState> {
     let cors_layer = CorsLayer::new()
-        .allow_origin(vec![host.parse::<HeaderValue>().unwrap()])
+        .allow_origin(vec![origin_url.parse::<HeaderValue>().unwrap()])
         .allow_methods(vec![
             Method::GET,
             Method::POST,

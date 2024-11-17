@@ -26,10 +26,10 @@ async fn main() {
         .with_max_level(tracing::Level::DEBUG)
         .init();
 
-    let app = routes::create_routes(&database_connection, &rabbitmq, host.clone());
-    let listener = tokio::net::TcpListener::bind(format!("{host}:{port}"))
-        .await
-        .unwrap();
+    let origin_url = format!("{host}:{port}");
+
+    let app = routes::create_routes(&database_connection, &rabbitmq, &origin_url);
+    let listener = tokio::net::TcpListener::bind(origin_url).await.unwrap();
     tracing::debug!("listening on {}", listener.local_addr().unwrap());
     axum::serve(listener, app).await.unwrap();
 }
