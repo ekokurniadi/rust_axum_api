@@ -16,17 +16,19 @@ pub enum Error {
 impl IntoResponse for Error {
     fn into_response(self) -> Response {
         let status_code = match &self {
-            Error::SqlxError(sqlx::Error::RowNotFound) => StatusCode::NOT_FOUND,
-            Error::SqlxError(_) => StatusCode::INTERNAL_SERVER_ERROR,
-            Error::Custom(_) => StatusCode::BAD_REQUEST,
+            Error::SqlxError(sqlx::Error::RowNotFound) => {
+                (StatusCode::NOT_FOUND, "record not found!")
+            }
+            Error::SqlxError(_) => (StatusCode::INTERNAL_SERVER_ERROR, "internal server error"),
+            Error::Custom(_) => (StatusCode::BAD_REQUEST, "bad request"),
         };
 
         let body = json!({
             "status": false,
-            "message": self.to_string(),
+            "message": status_code.1.to_string(),
         });
 
-        (status_code, axum::Json(body)).into_response()
+        (status_code.0, axum::Json(body)).into_response()
     }
 }
 
