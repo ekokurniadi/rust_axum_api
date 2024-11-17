@@ -1,0 +1,21 @@
+[package]
+name = "axum_rest_api"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+axum = { version = "0.7.9", features = ["macros","tracing"] }
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0.133"
+sqlx = { version = "0.8.2", features = ["postgres", "runtime-tokio-native-tls","chrono"] }
+jsonwebtoken = "9.3.0"
+anyhow = "1.0"
+tower = "0.5.1"
+lapin = { version = "2.5.0"}
+dotenv = "0.15.0"
+chrono = { version = "0.4", features = ["serde"] }
+thiserror = "2.0.3"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+uuid ={ version = "1.11.0", features = ["v4"]}
