@@ -6,12 +6,15 @@ use axum::{
 use category_routes::category_routes;
 use product_routes::product_routes;
 use sqlx::PgPool;
+use tower::ServiceBuilder;
+use tower_http::cors::CorsLayer;
 mod category_routes;
 mod product_routes;
+use http::{header::HeaderValue, method::Method};
 
-pub fn create_routes(db: &PgPool, rabbitmq: &RabbitMQ) -> IntoMakeService<Router> {
+pub fn create_routes(db: &PgPool, rabbitmq: &RabbitMQ, host: String) -> IntoMakeService<Router> {
     let state = AppState::new(db.clone(), rabbitmq);
-    let api_routes = { Router::new().merge(api_v1_routes().with_state(state)) };
+    let api_routes = { Router::new().merge(api_v1_routes(host).with_state(state)) };
 
     Router::new()
         .merge(health_check_routes())
@@ -19,10 +22,22 @@ pub fn create_routes(db: &PgPool, rabbitmq: &RabbitMQ) -> IntoMakeService<Router
         .into_make_service()
 }
 
-fn api_v1_routes() -> Router<AppState> {
+fn api_v1_routes(host: String) -> Router<AppState> {
+    let cors_layer = CorsLayer::new()
+        .allow_origin(vec![host.parse::<HeaderValue>().unwrap()])
+        .allow_methods(vec![
+            Method::GET,
+            Method::POST,
+            Method::PUT,
+            Method::DELETE,
+            Method::HEAD,
+            Method::OPTIONS,
+        ]);
+
     Router::new()
         .nest("/category", category_routes())
         .nest("/products", product_routes())
+        .layer(ServiceBuilder::new().layer(cors_layer))
 }
 
 fn health_check_routes() -> Router {
