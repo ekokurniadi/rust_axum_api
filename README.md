@@ -3,8 +3,7 @@ This project is a RESTful API built with the Rust programming language and the A
 
 ## Project Structure
 ```bash
-rust_axum_api/
-    rust_axum_api-master/
+    rust_axum_api/
         Cargo.toml              # Project dependencies and configuration
         Dockerfile              # Docker configuration
         Cargo.lock              # Dependency lock file
