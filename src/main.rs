@@ -1,21 +1,22 @@
 use config::{db, envi, rabbitmq::RabbitMQ};
 use lapin::options::ConfirmSelectOptions;
-use std::env;
 
 pub mod api;
 pub mod config;
+pub mod middleware;
 pub mod routes;
 pub mod shared;
 pub mod state;
 pub mod task;
+pub mod utils;
 
 #[tokio::main]
 async fn main() {
     envi::init_env();
     let database_connection = db::init().await.unwrap();
     let rabbitmq = RabbitMQ::connect().await.unwrap();
-    let host = env::var("HOST").expect("HOST MUST BE SET");
-    let port = env::var("PORT").expect("PORT MUST BE SET");
+    let host = envi::get("HOST", "0.0.0.0".to_string());
+    let port = envi::get("POST", "3100".to_string());
 
     let _ = rabbitmq
         .channel

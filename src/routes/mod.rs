@@ -1,5 +1,8 @@
-use crate::{config::rabbitmq::RabbitMQ, state::AppState};
+use crate::{config::rabbitmq::RabbitMQ, middleware as mw, state::AppState};
+use auth_routes::auth_routes;
 use axum::{
+    http::{header::HeaderValue, method::Method},
+    middleware,
     routing::{get, IntoMakeService, Router},
     Json,
 };
@@ -8,9 +11,11 @@ use product_routes::product_routes;
 use sqlx::PgPool;
 use tower::ServiceBuilder;
 use tower_http::cors::CorsLayer;
+use user_routes::user_routes;
+mod auth_routes;
 mod category_routes;
 mod product_routes;
-use http::{header::HeaderValue, method::Method};
+mod user_routes;
 
 pub fn create_routes(
     db: &PgPool,
@@ -18,7 +23,11 @@ pub fn create_routes(
     origin_url: &str,
 ) -> IntoMakeService<Router> {
     let state = AppState::new(db.clone(), rabbitmq);
-    let api_routes = { Router::new().merge(api_v1_routes(origin_url).with_state(state)) };
+    let api_routes = {
+        Router::new()
+            .merge(auth_routes().with_state(state.clone()))
+            .merge(api_v1_routes(origin_url, state.clone()).with_state(state))
+    };
 
     Router::new()
         .merge(health_check_routes())
@@ -26,7 +35,7 @@ pub fn create_routes(
         .into_make_service()
 }
 
-fn api_v1_routes(origin_url: &str) -> Router<AppState> {
+fn api_v1_routes(origin_url: &str, app_state: AppState) -> Router<AppState> {
     let cors_layer = CorsLayer::new()
         .allow_origin(vec![origin_url.parse::<HeaderValue>().unwrap()])
         .allow_methods(vec![
@@ -41,7 +50,9 @@ fn api_v1_routes(origin_url: &str) -> Router<AppState> {
     Router::new()
         .nest("/category", category_routes())
         .nest("/products", product_routes())
+        .nest("/users", user_routes())
         .layer(ServiceBuilder::new().layer(cors_layer))
+        .layer(ServiceBuilder::new().layer(middleware::from_fn_with_state(app_state, mw::auth)))
 }
 
 fn health_check_routes() -> Router {

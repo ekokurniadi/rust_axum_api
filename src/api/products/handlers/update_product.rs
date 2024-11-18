@@ -20,7 +20,6 @@ pub async fn execute(
     Json(payload): Json<ProductModelRequest>,
 ) -> Result<Json<ApiResponse<ProductModel>>, Error> {
     // return SqlxError::RowNotFound if record not found on database
-    print!("{}", id);
     state.product_service.get_product_by_id(id).await?;
 
     let product = state.product_service.update_product(id, &payload).await;

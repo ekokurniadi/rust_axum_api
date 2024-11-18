@@ -2,6 +2,7 @@ use axum::{
     http::StatusCode,
     response::{IntoResponse, Response},
 };
+use serde_json::error::Error as SError;
 use serde_json::json;
 use thiserror::Error;
 
@@ -11,6 +12,14 @@ pub type Result<T> = core::result::Result<T, Error>;
 pub enum Error {
     SqlxError(#[from] sqlx::Error),
     Custom(String),
+    InvalidToken,
+    ExpiredToken,
+    WrongCredentials,
+    TokenCreation,
+    MissingCredentials,
+    BcryptError(#[from] bcrypt::BcryptError),
+    RecordAlreadyExists,
+    DeserializationError(#[from] SError), // Handling deserialization errors
 }
 
 impl IntoResponse for Error {
@@ -20,7 +29,15 @@ impl IntoResponse for Error {
                 (StatusCode::NOT_FOUND, "record not found!")
             }
             Error::SqlxError(_) => (StatusCode::INTERNAL_SERVER_ERROR, "internal server error"),
-            Error::Custom(_) => (StatusCode::BAD_REQUEST, "bad request"),
+            Error::Custom(e) => (StatusCode::BAD_REQUEST, e.as_ref()),
+            Error::TokenCreation => (StatusCode::INTERNAL_SERVER_ERROR, "token creation error"),
+            Error::WrongCredentials => (StatusCode::UNAUTHORIZED, "wrong credentials"),
+            Error::MissingCredentials => (StatusCode::UNAUTHORIZED, "missing credentials"),
+            Error::InvalidToken => (StatusCode::UNAUTHORIZED, "invalid token"),
+            Error::ExpiredToken => (StatusCode::UNAUTHORIZED, "expired token"),
+            Error::BcryptError(_) => (StatusCode::INTERNAL_SERVER_ERROR, "failed hash password"),
+            Error::RecordAlreadyExists => (StatusCode::CONFLICT, "record already exists"),
+            Error::DeserializationError(_) => (StatusCode::BAD_REQUEST, "bad request"),
         };
 
         let body = json!({

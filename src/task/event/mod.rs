@@ -3,6 +3,7 @@ use std::fmt;
 pub enum Event {
     Products,
     Category,
+    User,
 }
 
 #[derive(Debug)]
