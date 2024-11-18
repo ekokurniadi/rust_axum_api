@@ -42,7 +42,7 @@ rust_axum_api/
 #### Clone the repository
 ```bash
 git clone https://github.com/ekokurniadi/rust_axum_api.git
-cd rust_axum_api/rust_axum_api-master
+cd rust_axum_api
 ```
 
 #### Copy the example .env file:
@@ -65,7 +65,7 @@ sqlx migrate run
 ### Using Cargo
 #### Run the project in development:
 ```bash
-cd rust_axum_api/rust_axum_api-master
+cd rust_axum_api
 cargo run main.rs
 ```
 ### Using Docker
