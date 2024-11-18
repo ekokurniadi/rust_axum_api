@@ -27,6 +27,11 @@ rust_axum_api/
                 users/          # User management API
             routes/             # Route definitions
 ```
+## Key Directories:
+- migrations: SQL files for database setup and migration.
+- src/api: Contains modules for handling business logic of various entities (products, categories, users, auth).
+- src/routes: Route definitions for Axum.
+- src/shared: Error handling and shared utilities.
 
 ## Prerequisites
 - Rust
@@ -60,6 +65,7 @@ sqlx migrate run
 ### Using Cargo
 #### Run the project in development:
 ```bash
+cd rust_axum_api/rust_axum_api-master
 cargo run main.rs
 ```
 ### Using Docker
